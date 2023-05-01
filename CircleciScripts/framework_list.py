@@ -39,7 +39,7 @@ grouped_frameworks = [
         "AWSKinesisVideoArchivedMedia",
         "AWSKinesisVideoSignaling",
         "AWSLambda",
-        "AWSLex",
+        #"AWSLex", Contains non-portable, closed-source binaries, only available for iOS and iOS-Simulator.
         "AWSLocation",
         "AWSLogs",
         "AWSMachineLearning",

@@ -1,5 +1,27 @@
 # AWS SDK for iOS
 
+### Fork Differences
+- This fork adds support for building included frameworks for [Mac Catalyst](https://developer.apple.com/mac-catalyst/), which is a cross-compilation approach allowing to natively run iOS / iPadOS apps on macOS w/o any emulation or translation.
+- In contrast to [iOS apps for Apple Silicon](https://developer.apple.com/documentation/apple-silicon/running-your-ios-apps-on-macos), Catalyst requires recompilation of iOS apps before executing them on macOS, as it relinks apps runtime to macOS (AppKit) under-the-hood, while the former just dynamically loads the desktop version of UIKit.
+- Due to recompilation, you also get full support for desktop-specific features like fully-resizable windows, keyboard + pointer controls not involving a touchscreen, and [macOS-natural appearance](https://developer.apple.com/documentation/uikit/mac_catalyst/choosing_a_user_interface_idiom_for_your_mac_app/).
+- If you just need to run your mobile app on a desktop w/o adopting those features, the Apple Silicon approach w/o recompilation can be simpler. In this case, it's better to stick w/ the AWS-maintained [version](https://github.com/aws-amplify/aws-sdk-ios) as it would guarantee you more frequent updates and per our expertise, it works smoothly on M1 CPUs.  
+- Still, many companies decide to support a dedicated Mac Catalyst version to offer a native UI/UX to their users (as well as support Intel Macs, which can't directly run iOS apps as M1 do). Moreover, as Catalyst evolves, you need fewer and fewer code differences between that and the iOS / iPadOS version. For example, one of our apps w/ 1M lines of codes has only 15 lines different amid those versions. You even don't need to keep them in separate branches but differentiate w/ [Swift compiler directives](https://www.swiftbysundell.com/articles/conditional-compilation-within-swift-expressions/).  
+- Requests were made to add such support into the main branch, yet not fully implemented, so we decided to maintain our own fork:
+  - https://github.com/aws-amplify/aws-sdk-ios/issues/4065
+  - https://github.com/aws-amplify/aws-sdk-ios/issues/2536
+  - https://github.com/aws-amplify/aws-sdk-ios/pull/2065
+  - https://github.com/aws-amplify/aws-sdk-ios/issues/2072
+- In the first revisions, this repo had many divergences from the main branch, as Apple deprecated many symbols as transitioning to Catalyst. Over time, we contributed many of our enhancements back to the main repository, making divergence less than 100 lines of code. This repo can be archived when official support is implemented in the aws-ios-sdk.
+- Other differences w/ the upstream:
+  - All AWS frameworks are supported except AWSLex, which comes w/ a pre-compiled, close-source, and AWS-proprietary library [Bluefront](https://github.com/aws-amplify/aws-sdk-ios/tree/main/AWSLex/Bluefront), that is also a limitation of original distribution (search this README by `AWSLex` term).
+  - The build process remains the same - you need to run `python3 CircleciScripts/create_xcframeworks.py` and take the output from the `xcframeworks` folder within this repo root. Mac Catalyst version comes as an extra slice within XCFramework format (in particular, `ios-arm64_x86_64-maccatalyst`, that targets both arm64 (Apple Silicon) and Intel (x86_64) Macs). Be aware that other build methods, mainly required for AWS-internal duties (e.g., building for SPM), are not yet adapted for Mac Catalyst.
+- Future directions mostly focus on adding tvOS and watchOS support (w/ the former previously available for some frameworks in scope, yet its support was temporarily paused to focus on Mac Catalyst).
+- Extra references:
+  - If you are starting a new project from scratch, you may consider [aws-sdk-swift](https://github.com/awslabs/aws-sdk-swift), which is pure Swift implementation w/o C and Objective-C parts as here. Per [this GitHub ticket](https://github.com/awslabs/aws-sdk-swift/issues/376), it is going to get cross-platform support soon (including both Apple Mac Catalyst, Watch, TV, and generic Linux). Being pure Swift, it doesn't depend on Cocoa runtime, so it is much more portable.
+  - Alternatively, you can look at another Swift implementation of [AWS Amplify](https://github.com/awslabs/aws-sdk-swift/issues/376), yet it depends on Cocoa runtime, so it cannot be used on the server-side (that is possible w/ the bullet above if you'd decide to share code amid cloud and frontend) and lacks the support of many AWS services like Amazon Transcribe, as focusing primarily on mobile-specific things (like authentication, storage, and push notifications). Request to add support for, at least, Catalyst platform has a pretty high [demand](https://github.com/aws-amplify/amplify-ios/issues/1124).
+
+### Links
+
 [![Release](https://img.shields.io/github/release/aws/aws-sdk-ios.svg)](../../releases)
 [![CocoaPods](https://img.shields.io/cocoapods/v/AWSCore.svg)](https://cocoapods.org/pods/AWSCore)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
